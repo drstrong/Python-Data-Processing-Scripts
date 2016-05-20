@@ -5,8 +5,7 @@
 #This program will join CSV files with the same variable name and sort them.
 
 import pandas
-from os import path
-from os import listdir
+from os import listdir, path
 from datetime import datetime
 
 #INPUT PARAMETERS
@@ -30,13 +29,13 @@ def MergeByRow(csv_files):
         if (len(filelist) > 1):    
             startTagTime = datetime.now()
             #Build a list of all file paths using the filelist and working directory
-            pathList = (path.join(workingDirectory,f) for f in filelist)
+            pathList = [path.join(workingDirectory,f) for f in filelist]
             #Concatenate all the files
-            df = pandas.concat((pandas.read_csv(f, header=None, parse_dates = True, index_col = 0, names = [key]) for f in pathList))
+            df = pandas.concat(pandas.read_csv(f, header=None, parse_dates = False, index_col = 0, names = ["DateTime", key, "Status"]) for f in pathList)
             df.sort_index(axis = 0, ascending = True, inplace = True)
             #Intermediate processing
-            startTime = df.head(1).index.strftime("%Y-%m-%d")[0] + "T0000"
-            endTime = df.tail(1).index.strftime("%Y-%m-%d")[0] + "T0000"          
+            startTime = datetime.fromtimestamp(df.head(1).index[0]).strftime("%Y-%m-%dT%H%M%S")
+            endTime = datetime.fromtimestamp(df.tail(1).index[0]).strftime("%Y-%m-%dT%H%M%S")        
             newFilename = '%s_%s_to_%s.csv' % (key, startTime, endTime)
             newFilePath = path.join(workingDirectory,newFilename)
             #Write to a new file  

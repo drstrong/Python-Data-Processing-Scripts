@@ -1,22 +1,27 @@
 #CSV Merge By Adding Rows
 #By Eric Strong
-#Last modified: 2016/05/05
+#Last modified: 2016/05/24
 #
 #This program will join CSV files with the same variable name and sort them.
 
 import pandas
+import shutil
+import gzip
 from os import listdir, path
 from datetime import datetime
 
 #INPUT PARAMETERS
-workingDirectory = r"C:\Users\estrong.THE_DEI_GROUP\Desktop\CWD"
+workingDirectory = r"C:\Users\estrong\Desktop\CWD"
+zipResults = True
+removeNonZippedFile = True
 
 #Build a list of keys (CSV files that share the same eDNA tag, to be joined)
 def BuildKeys(fileList):
     csv_files = {}
     for fileName in fileList:
+        fileSize = path.getsize(path.join(workingDirectory,fileName))
         #Error checking
-        if ((fileName.endswith(".csv") or fileName.endswith(".gz")) and not fileName.startswith("_")):
+        if ((fileName.endswith(".csv") or fileName.endswith(".gz")) and fileSize>0 and not fileName.startswith("_")):
             key = path.splitext(path.basename(fileName))[0].split('_')[0]
             csv_files.setdefault(key, []).append(fileName)
     return csv_files
@@ -41,7 +46,12 @@ def MergeByRow(csv_files):
             #Write to a new file  
             df.to_csv(newFilePath, index = True, header = False)
             print("%s complete in %s minutes" % (newFilename,round((datetime.now()-startTagTime).total_seconds()/60,3))) 
-
+            #If zipping the results
+            if (zipResults):
+                with open(newFilePath, 'rb') as f_in, gzip.open(newFilePath + ".gz", 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out) 
+                if (removeNonZippedFile): os.remove(newFilePath)
+                        
 #START PROGRAM
 startProgramTime = datetime.now();
 print("Program initialized at %s" % startProgramTime)

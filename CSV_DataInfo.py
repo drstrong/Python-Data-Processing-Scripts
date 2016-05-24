@@ -1,6 +1,6 @@
 #CSV Data Info
 #By Eric Strong
-#Last modified: 2016/05/04
+#Last modified: 2016/05/24
 #
 #This program is meant to summarize metrics for a CSV data file. Main Functionality- 
 #find filename, filesize, start and ending dates, summarizing metrics, and data gaps
@@ -14,17 +14,18 @@ from datetime import datetime
 
 #INPUT PARAMETERS
 #I/O
-outputDirectory = r"C:\Users\estrong.THE_DEI_GROUP\Desktop\CWD"
+outputDirectory = r"C:\Users\estrong\Desktop\CWD"
 outputFilename = "_DataSummary_" + datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv"
 outputGapPrefix = "_gaps_"
+dateUnit = 'ms'
 #Summarizing Data
-summarizeData  = False
+summarizeData  = True
 #Data Gaps
 findDataGaps = False
 dataGapDef = 1200 #in seconds
 
 def FindDataGaps(df,filename): 
-    outputGapFilename = outputGapPrefix + path.splitext(filename)[0] + ".csv"
+    outputGapFilename = outputGapPrefix + filename
     with open(path.join(outputDirectory, outputGapFilename),'w',newline='') as outGapFile:    
         gapWriter = csv.writer(outGapFile)
         prevDate = df.head(1)['DateTime'].tolist()[0]   
@@ -56,11 +57,10 @@ with open(path.join(outputDirectory, outputFilename),'w',newline='') as outputFi
             elif inputPath.endswith(".gz"): csvFile = gzip.open(inputPath,'rb')  
             else: continue
             #Open the file as a pandas dataframe   
-            df = pandas.read_csv(csvFile, header=None, names = ["DateTime","Value"])      
-            df['DateTime'] = pandas.to_datetime(df['DateTime'])
+            df = pandas.read_csv(csvFile, index_col=0,header=None, names = ["DateTime","Value","Status"])      
             #Extract the starting and ending times
-            startTime = df.head(1)['DateTime'].tolist()[0]
-            endTime = df.tail(1)['DateTime'].tolist()[0]
+            startTime = datetime.fromtimestamp(df.head(1).index[0]).strftime("%Y-%m-%dT%H%M%S")
+            endTime = datetime.fromtimestamp(df.tail(1).index[0]).strftime("%Y-%m-%dT%H%M%S")       
             #Data gaps
             if (findDataGaps): FindDataGaps(df,filename)
             #Write the results

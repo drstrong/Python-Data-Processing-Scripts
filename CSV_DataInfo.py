@@ -8,8 +8,7 @@
 import csv
 import gzip
 import pandas
-from os import path
-from os import listdir
+from os import path, listdir
 from datetime import datetime
 
 #INPUT PARAMETERS

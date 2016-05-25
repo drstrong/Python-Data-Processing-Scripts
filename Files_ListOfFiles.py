@@ -5,8 +5,7 @@
 #This program is meant to output a list of files in a directory.
 
 import csv
-from os import path
-from os import listdir
+from os import path, listdir
 from datetime import datetime
 
 #INPUT PARAMETERS
